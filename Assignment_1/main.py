@@ -117,7 +117,7 @@ def approx_grad_task2(func: Callable[[np.ndarray], float], x: np.ndarray) -> np.
         using scipy.optimize.approx_fprime(). (Task2 functions)
         @return The gradient approximation
     """
-    pass
+    return approx_fprime(x, func, 0.0001)
 
 
 def func_1a(x: np.ndarray) -> float:
@@ -288,21 +288,21 @@ def task3():
 
     # func 2a
     x_ana = grad_2a(x)
-    x_num = approx_fprime(x, func_2a, 0.0001)
+    x_num = approx_grad_task2(func_2a, x)
 
     ax[4].bar([0 - bw / 2, 1 - bw / 2], [x_ana[0], x_ana[1]], bw)
     ax[4].bar([0 + bw / 2, 1 + bw / 2], [x_num[0], x_num[1]], bw)
 
     # func 2b
     x_ana = grad_2b(x)
-    x_num = approx_fprime(x, func_2b, 0.0001)
+    x_num = approx_grad_task2(func_2b, x)
 
     ax[5].bar([0 - bw / 2, 1 - bw / 2], [x_ana[0], x_ana[1]], bw)
     ax[5].bar([0 + bw / 2, 1 + bw / 2], [x_num[0], x_num[1]], bw)
 
     # func 2c
     x_ana = grad_2c(x)
-    x_num = approx_fprime(x, func_2c, 0.0001)
+    x_num = approx_grad_task2(func_2c, x)
 
     ax[6].bar([0 - bw / 2, 1 - bw / 2], [x_ana[0], x_ana[1]], bw)
     ax[6].bar([0 + bw / 2, 1 + bw / 2], [x_num[0], x_num[1]], bw)
