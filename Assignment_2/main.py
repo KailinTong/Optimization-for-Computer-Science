@@ -155,7 +155,6 @@ def task3():
         for j in range(3):
             A[:, 3*i+j] = x ** i * y ** j
     x_solution = inv(A.T @ A) @ A.T @ np.expand_dims(z, axis=1)
-    print(x_solution)
     x_hat, y_hat = np.meshgrid(np.linspace(-4, 4), np.linspace(-4, 4))
     z_hat = np.zeros_like(x_hat)
     for i in range(3):
@@ -163,6 +162,8 @@ def task3():
             z_hat += x_solution[3*i+j] * x_hat ** i * y_hat ** j
 
     ax.plot_wireframe(x_hat, y_hat, z_hat, color='g', rstride=2, cstride=2)
+    print("coefficients are:\n", x_solution)
+
     """ End of your code
     """
     return fig, A, x_solution
