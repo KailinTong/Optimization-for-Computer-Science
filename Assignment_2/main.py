@@ -55,7 +55,7 @@ def task1():
     x1c = np.linspace(-10, 10)
     x2c = 1 / 10  * x1c ** 2 - 3
     ax[0].plot(x1c, x2c, color="b")
-    ax[0].scatter(-1/2, 1/2)
+    ax[0].scatter(5, -1/2, c="r")
     ax[0].set_xlim([-5, 5])
     ax[0].set_ylim([-5, 5])
 
@@ -67,7 +67,7 @@ def task1():
     x1c = np.linspace(-10, 10)
     x2c = np.ones_like(x1c) * 2
     ax[1].plot(x1c, x2c, color="b")
-    ax[1].scatter(-1/2, 1/2)
+    ax[1].scatter(1, 2, c="r")
     ax[1].set_xlim([-5, 5])
     ax[1].set_ylim([-5, 5])
 
@@ -75,8 +75,13 @@ def task1():
     ax[2].contourf(x1, x2, (x2 - 1) ** 2 + x1 * x2**2 - 2, 100, cmap='gist_rainbow')
     circle1 = plt.Circle((0, 0), 2, fill=False, color='b')
     ax[2].add_patch(circle1)
+    ax[2].scatter(1, 0, c="r")
+    ax[2].scatter([0, 0, (1 - 7**0.5)/3, (1 - 7**0.5)/3], [2**0.5, -2**0.5, 1.9233, -1.9233], c="g")
+
     ax[2].set_xlim([-5, 5])
     ax[2].set_ylim([-5, 5])
+
+
     """ End of your code
     """
     return fig
@@ -92,6 +97,33 @@ def task2():
     fig.suptitle('Task 2 - Contour plots + Constraints + Iterations over k', fontsize=16)
     """ Start of your code
     """
+    x1, x2 = np.meshgrid(np.linspace(-5, 5), np.linspace(-5, 5))
+    ax.contourf(x1, x2, (x1 - 1)**2 - x1 * x2, 100, cmap='gist_rainbow')
+    x1c = np.linspace(-10, 10)
+    x2c = 4 - x1c
+    ax.plot(x1c, x2c, color="b")
+    ax.scatter(3/2, 5/2, c="r")
+    ax.set_xlim([-2, 5])
+    ax.set_ylim([-2, 5])
+    ax.set_xlabel('$x_1$')
+    ax.set_ylabel('$x_2$')
+    # algorithm 1
+    lambd = 5
+    alphas = [0.55, 0.65, 1]
+    colors = ["k", "g", "pink"]
+    K = 20
+
+    for a in range(len(alphas)):
+        alpha = alphas[a]
+        x1 = []
+        x2 = []
+        for i in range(K):
+            x = np.array([(6 * alpha - lambd) / (4 * alpha - 1), (10 * alpha - 3 * lambd + 1) / (4 * alpha - 1)])
+            lambd = alpha * (x[0] + x[1] - 4) + lambd
+            x1.append(x[0])
+            x2.append(x[1])
+        ax.plot(x1, x2, "*", color=colors[a], label='alpha = ' + str(alpha))
+    plt.legend()
 
     """ End of your code
     """
@@ -117,7 +149,20 @@ def task3():
     x_solution = None
     """ Start of your code
     """
+    ax.scatter(x, y, z, marker='o')
+    A = np.zeros((N, 9))
+    for i in range(3):
+        for j in range(3):
+            A[:, 3*i+j] = x ** i * y ** j
+    x_solution = inv(A.T @ A) @ A.T @ np.expand_dims(z, axis=1)
+    print(x_solution)
+    x_hat, y_hat = np.meshgrid(np.linspace(-4, 4), np.linspace(-4, 4))
+    z_hat = np.zeros_like(x_hat)
+    for i in range(3):
+        for j in range(3):
+            z_hat += x_solution[3*i+j] * x_hat ** i * y_hat ** j
 
+    ax.plot_wireframe(x_hat, y_hat, z_hat, color='g', rstride=2, cstride=2)
     """ End of your code
     """
     return fig, A, x_solution
