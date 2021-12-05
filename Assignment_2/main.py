@@ -162,6 +162,7 @@ def task3():
             z_hat += x_solution[3*i+j] * x_hat ** i * y_hat ** j
 
     ax.plot_wireframe(x_hat, y_hat, z_hat, color='g', rstride=2, cstride=2)
+    np.set_printoptions(precision=3, suppress=True)
     print("coefficients are:\n", x_solution)
 
     """ End of your code
