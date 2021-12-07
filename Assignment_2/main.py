@@ -109,8 +109,8 @@ def task2():
     ax.set_ylabel('$x_2$')
     # algorithm 1
     lambd = 5
-    alphas = [0.55, 0.65, 1]
-    colors = ["k", "g", "pink"]
+    alphas = [0.65]
+    colors = ["g"]
     K = 20
 
     for a in range(len(alphas)):
@@ -118,11 +118,11 @@ def task2():
         x1 = []
         x2 = []
         for i in range(K):
-            x = np.array([(6 * alpha - lambd) / (4 * alpha - 1), (10 * alpha - 3 * lambd + 1) / (4 * alpha - 1)])
+            x = np.array([(6 * alpha - lambd) / (4 * alpha - 1), (10 * alpha - 3 * lambd + 2) / (4 * alpha - 1)])
             lambd = alpha * (x[0] + x[1] - 4) + lambd
             x1.append(x[0])
             x2.append(x[1])
-        ax.plot(x1, x2, "*", color=colors[a], label='alpha = ' + str(alpha))
+        ax.plot(x1, x2, "x", color=colors[a], label='alpha = ' + str(alpha))
     plt.legend()
 
     """ End of your code
