@@ -71,13 +71,13 @@ class NN(object):
 
             '''gradient w1 b1'''
             dldy = - ys * 1 / yprob
-            sigma1, sigma2, sigma3 = softmax(z2)[0], softmax(z2)[1], softmax(z2)[2]
+            sigma1, sigma2, sigma3 = softmax(z2)[0].item(), softmax(z2)[1].item(), softmax(z2)[2].item()
             dydz = np.array([[sigma1*(1-sigma1), -sigma1*sigma2, -sigma1*sigma3],
                              [-sigma1*sigma2, sigma2*(1-sigma2), -sigma2*sigma3],
                              [-sigma1*sigma3, -sigma2*sigma3, sigma3*(1-sigma3)]])
             e2 = dydz @ dldy
             gradient_w1 = e2 @ a1.T
-            gradient_b1 = e2 @ a1
+            gradient_b1 = e2
 
             '''gradient w0 b0'''
             dzda = gradient_w1.T
