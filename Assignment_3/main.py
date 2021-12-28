@@ -5,10 +5,12 @@ import matplotlib.pyplot as plt
 import json
 from typing import Callable, Type
 from copy import deepcopy
+import pprint
 
 MU = 0
 SiGMA = 0.5
 EPOCH = 350
+pp = pprint.PrettyPrinter(indent=4)
 
 def softmax(x):
     """Compute softmax values for each sets of scores in x."""
@@ -123,11 +125,11 @@ class NN(object):
         self.diff = {}
         self.theta = {}
         self.gradient = {}
+        self.init_params()
         self.lr = learning_rate
         self.this_theta_nag = 0
         self.prev_p = deepcopy(self.theta)
         self.this_p = deepcopy(self.theta)
-        self.init_params()
 
     def init_params(self):
         self.theta['W0'] = np.random.normal(MU, SiGMA, size=(self.num_hidden, self.num_input))
@@ -141,16 +143,23 @@ class NN(object):
         self.theta['W0'] = W0
         self.theta['b0'] = b0
 
-    def feed_forward(self, x: np.ndarray):
+    def feed_forward(self, x: np.ndarray, training: bool = True):
 
         assert x.shape[1] == self.num_input, "x shape is {}; it should be {}".format(x.shape, (self.num_input, 1))
         x = x.T
-        self.var['x'] = x
-        self.var['z1'] = self.theta['W0'] @ x + self.theta['b0']
-        self.var['a1'] = np.log(1 + np.exp(self.var['z1']))
-        self.var['z2'] = self.theta['W1'] @ self.var['a1'] + self.theta['b1']
-        self.var['y_prob'] = softmax(self.var['z2'])
-        self.var['y_pred'] = np.argmax(self.var['y_prob'], axis=0)
+        z1 = self.theta['W0'] @ x + self.theta['b0']
+        a1 = np.log(1 + np.exp(z1))
+        z2 = self.theta['W1'] @ a1 + self.theta['b1']
+        y_prob = softmax(z2)
+        y_pred = np.argmax(y_prob, axis=0)
+        if training:
+            self.var['x'] = x
+            self.var['z1'] = z1
+            self.var['a1'] = a1
+            self.var['z2'] = z2
+            self.var['y_prob'] = y_prob
+            self.var['y_pred'] = y_pred
+        return y_pred
 
     def back_propogate(self, y: np.ndarray):
         S = y.size
@@ -158,8 +167,6 @@ class NN(object):
 
         for i in range(y.size):
             y_label_prob[y[i]][i] = 1
-
-
 
         '''calculate gradient for one sample'''
         gradient_w1_sum = np.zeros((self.num_output, self.num_hidden))
@@ -243,21 +250,49 @@ def task1():
     net_GD = NN(4, 16, 3, gradient_method='GD')
 
     # training
+    pp.pprint("*"*50)
+    pp.pprint("Training with Steepest Descent starts!")
+    loss_GD = []
+    accuracy_GD = [ ]
+    accuracy_GD_test = []
+    accuracy_train = accuracy_test = 0
     for i in range(EPOCH):
-        net_GD.feed_forward(x_train_g)
+        y_pred = net_GD.feed_forward(x_train_g)
         loss = net_GD.back_propogate(y_train_g)
+        accuracy_train = np.mean(y_pred == y_train_g)
         net_GD.update()
-        print(loss)
-
+        pp.pprint("Loss: {}".format(loss))
+        loss_GD.append(loss)
+        accuracy_GD.append(accuracy_train)
+        # test
+        y_pred = net_GD.feed_forward(x_test_g, training=False)
+        accuracy_test = np.mean(y_pred == y_test_g)
+        accuracy_GD_test.append(accuracy_test)
+    pp.pprint("GD final training accuracy: {}; final test accuracy: {}".format(accuracy_train, accuracy_test))
     # Model using Nesterovs method
     net_NAG = NN(4, 16, 3, gradient_method='NAG')
 
     # training
+    pp.pprint("*"*50)
+    pp.pprint("Training with Nesterov Accelerated Gradient descent starts!")
+    loss_NGA = []
+    accuracy_NGA = []
+    accuracy_NGA_test = []
     for i in range(EPOCH):
-        net_NAG.feed_forward(x_train_g)
+        # training
+        y_pred = net_NAG.feed_forward(x_train_g)
         loss = net_NAG.back_propogate(y_train_g)
+        accuracy_train = np.mean(y_pred == y_train_g)
         net_NAG.update()
-        print(loss)
+        pp.pprint("Loss: {}".format(loss))
+        loss_NGA.append(loss)
+        accuracy_NGA.append(accuracy_train)
+        # test
+        y_pred = net_NAG.feed_forward(x_test_g, training=False)
+        accuracy_test = np.mean(y_pred == y_test_g)
+        accuracy_NGA_test.append(accuracy_test)
+    pp.pprint("NGA final training accuracy: {}; final test accuracy: {}".format(accuracy_train, accuracy_test))
+
 
     net_GD.export_model()
     net_NAG.export_model()
@@ -268,12 +303,25 @@ def task1():
     axs.append(fig.add_subplot(121))
     axs.append(fig.add_subplot(122))
 
+    epoch = np.arange(EPOCH)
     axs[0].set_title('Loss')
     axs[0].grid()
-
+    axs[0].semilogy(epoch, loss_GD, label="GD")
+    axs[0].semilogy(epoch, loss_NGA, label="NGA")
+    axs[0].legend()
     axs[1].set_title('Accuracy')
     axs[1].grid()
+    axs[1].plot(epoch, accuracy_GD,  label="GD Training")
+    axs[1].plot(epoch, accuracy_NGA, label="NGA Training")
+    axs[1].plot(epoch, accuracy_GD_test, label="GD Test")
+    axs[1].plot(epoch, accuracy_NGA_test, label="NGA Test")
+
+    axs[1].legend()
+
+
     return fig
+
+
 
 
 if __name__ == '__main__':
