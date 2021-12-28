@@ -269,6 +269,7 @@ def task1():
         accuracy_test = np.mean(y_pred == y_test_g)
         accuracy_GD_test.append(accuracy_test)
     pp.pprint("GD final training accuracy: {}; final test accuracy: {}".format(accuracy_train, accuracy_test))
+
     # Model using Nesterovs method
     net_NAG = NN(4, 16, 3, gradient_method='NAG')
 
