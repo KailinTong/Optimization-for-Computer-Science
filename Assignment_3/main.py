@@ -115,7 +115,7 @@ def validate_gradient():
 
 class NN(object):
     def __init__(self, num_input: int, num_hidden: int, num_output: int, gradient_method: str, dtype=np.float32,
-                 learning_rate=0.01):
+                 learning_rate=0.005):
         self.num_input = num_input
         self.num_hidden = num_hidden
         self.num_output = num_output
@@ -279,12 +279,37 @@ def task1():
     loss_NGA = []
     accuracy_NGA = []
     accuracy_NGA_test = []
+    prev_step_size = 0
+    this_step_size = 0
+    prev_p = deepcopy(net_NAG.theta)
+    this_p = deepcopy(net_NAG.theta)
+    this_q = {}
+    this_size = 0
+
     for i in range(EPOCH):
         # training
         y_pred = net_NAG.feed_forward(x_train_g)
         loss = net_NAG.back_propogate(y_train_g)
         accuracy_train = np.mean(y_pred == y_train_g)
-        net_NAG.update()
+
+        temp_net = NN(4, 16, 3, gradient_method='NAG')
+        next_size = (1 + (1 + 4 * this_size ** 2) ** 0.5) / 2.0
+        for key in net_NAG.theta:
+            this_q[key] = this_p[key] + (this_size - 1)/next_size * (this_p[key] - prev_p[key])
+        temp_net.theta = deepcopy(this_q)
+        temp_net.feed_forward(x_train_g)
+        temp_net.back_propogate(y_train_g)
+
+        net_NAG.theta['W0'] = this_q['W0'] - net_NAG.lr * temp_net.gradient['W0']
+        net_NAG.theta['W1'] = this_q['W1'] - net_NAG.lr * temp_net.gradient['W1']
+        net_NAG.theta['b0'] = this_q['b0'] - net_NAG.lr * temp_net.gradient['b0']
+        net_NAG.theta['b1'] = this_q['b1'] - net_NAG.lr * temp_net.gradient['b1']
+
+        prev_p = deepcopy(this_p)
+        this_p = deepcopy(net_NAG.theta)
+        this_size = next_size
+
+        # net_NAG.update()
         pp.pprint("Loss: {}".format(loss))
         loss_NGA.append(loss)
         accuracy_NGA.append(accuracy_train)
@@ -308,14 +333,14 @@ def task1():
     axs[0].set_title('Loss')
     axs[0].grid()
     axs[0].semilogy(epoch, loss_GD, label="GD")
-    axs[0].semilogy(epoch, loss_NGA, label="NGA")
+    axs[0].semilogy(epoch, loss_NGA, label="NAG")
     axs[0].legend()
     axs[1].set_title('Accuracy')
     axs[1].grid()
     axs[1].plot(epoch, accuracy_GD,  label="GD Training")
-    axs[1].plot(epoch, accuracy_NGA, label="NGA Training")
+    axs[1].plot(epoch, accuracy_NGA, label="NAG Training")
     axs[1].plot(epoch, accuracy_GD_test, label="GD Test")
-    axs[1].plot(epoch, accuracy_NGA_test, label="NGA Test")
+    axs[1].plot(epoch, accuracy_NGA_test, label="NAG Test")
 
     axs[1].legend()
 
